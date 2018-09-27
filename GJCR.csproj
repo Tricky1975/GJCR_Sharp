@@ -59,6 +59,33 @@
     <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="GJCR6.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\TrickyUnits\Dirry.cs">
+      <Link>Dependencies\TrickyUnits\Dirry.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\GINI Is Not Ini.cs">
+      <Link>Dependencies\TrickyUnits\GINI Is Not Ini.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\OpenURI.cs">
+      <Link>Dependencies\TrickyUnits\OpenURI.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\mkl.cs">
+      <Link>Dependencies\TrickyUnits\mkl.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\qstr.cs">
+      <Link>Dependencies\TrickyUnits\qstr.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\qstream.cs">
+      <Link>Dependencies\TrickyUnits\qstream.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\gtk\ListBox.cs">
+      <Link>Dependencies\TrickyUnits\gtk\ListBox.cs</Link>
+    </Compile>
+    <Compile Include="..\TrickyUnits\gtk\QuickGTK.cs">
+      <Link>Dependencies\TrickyUnits\gtk\QuickGTK.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Dependencies\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
