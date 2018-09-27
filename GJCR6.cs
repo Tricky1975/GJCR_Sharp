@@ -34,14 +34,18 @@ namespace GJCR
         // Variables
 
         // Config
+        const int ww = 1500;
+        const int wh = 1000;
         static TGINI Config;
 
         // GUI: Main
         static MainWindow win;
+        static VBox whole;
 
         // GUI: Comments
         static HBox boxComments;
         static ListBox listComments;
+        static TextView viewComment;
 
         // GUI: Entry view
         static HBox boxEntries;
@@ -62,11 +66,34 @@ namespace GJCR
 
         public static void ComposeGUI()
         {
+            // Window
             win = new MainWindow();
+            whole = new VBox();
+            win.Add(whole);
+            win.Title = $"GJCR6 - Version {MKL.Newest} - Coded by: Tricky";
+            win.SetSizeRequest(ww, wh);
+            win.ModifyBg(StateType.Normal,new Gdk.Color(0, 0, 0));
+            // Comments
+            boxComments = new HBox();
+            boxComments.SetSizeRequest(ww, 250);
+            listComments = new ListBox("Comments");
+            listComments.SetSizeRequest(300, 250);
+            boxComments.Add(QuickGTK.Scroll(listComments.Gadget));
+            viewComment = new TextView();
+            viewComment.ModifyBase(StateType.Normal,new Gdk.Color( 0, 18, 25));
+            viewComment.ModifyText(StateType.Normal, new Gdk.Color(0, 180, 255));
+            viewComment.Editable = false;
+            viewComment.SetSizeRequest(ww - 300, 250);
+            boxComments.Add(QuickGTK.Scroll(viewComment));
+            whole.Add(boxComments);
+            // Entries
+            boxEntries = new HBox();
+            boxEntries.SetSizeRequest(ww, wh - 250);
+            whole.Add(boxEntries);
         }
 
         public static void Run(){
-            win.Show();
+            win.ShowAll();
             Application.Run();
         }
 
