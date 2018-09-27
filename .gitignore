@@ -39,3 +39,13 @@ Thumbs.db
 
 # dotCover
 *.dotCover
+
+
+# Mac Crap Files
+.DS_Store
+._*
+
+# MKL
+*MKL*
+MKL*
+
