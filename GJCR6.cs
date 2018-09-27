@@ -29,12 +29,28 @@ namespace GJCR
 {
     class MainClass
     {
-        public static void Main(string[] args)
+        static MainWindow win;
+
+        public static void Init(string[] args)
         {
             Application.Init();
-            MainWindow win = new MainWindow();
+        }
+
+        public static void ComposeGUI()
+        {
+            win = new MainWindow();
+        }
+
+        public static void Run(){
             win.Show();
             Application.Run();
         }
+
+        public static void Main(string[] args){
+            Init(args);
+            ComposeGUI();
+            Run();
+        }
+
     }
 }
