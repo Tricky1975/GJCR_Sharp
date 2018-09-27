@@ -24,15 +24,39 @@
 // EndLic
 ﻿using System;
 using Gtk;
+using TrickyUnits;
+using TrickyUnits.GTK;
 
 namespace GJCR
 {
     class MainClass
     {
+        // Variables
+
+        // Config
+        static TGINI Config;
+
+        // GUI: Main
         static MainWindow win;
 
-        public static void Init(string[] args)
+        // GUI: Comments
+        static HBox boxComments;
+        static ListBox listComments;
+
+        // GUI: Entry view
+        static HBox boxEntries;
+        static Button bView;
+        static Button bExtract;
+        static Button bExtractAll;
+        static Button bInfo;
+        static Entry eExtractAll;
+
+        // Functions
+
+        public static void Init(string[] args) // Args are copied in order to allow direct JCR6 loading from the command line
         {
+            MKL.Lic    ("GJCR6 for .NET - GJCR6.cs","GNU General Public License 3");
+            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.27");
             Application.Init();
         }
 
