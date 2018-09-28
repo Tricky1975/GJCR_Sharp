@@ -186,6 +186,7 @@ namespace GJCR
             nvEntries = new NodeView(); FileRequired.Add(nvEntries);
             sEntries = QuickGTK.Scroll(nvEntries);
             sEntries.SetSizeRequest(ww, (wh - 250) - 25);
+            InitEntryTreeView();
             boxButtons.Add(bOpen);
             boxButtons.Add(bView);
             boxButtons.Add(bExtract);
