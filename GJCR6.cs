@@ -71,10 +71,19 @@ namespace GJCR
 
 
         // Callback functions
+        static void OnOpen(object sender,EventArgs e){
+            var file = QuickGTK.RequestFile("Please choose a JCR6 compatible file");
+            Load(file);
+        }
+
+        static void OnComments(object sender,EventArgs e){
+            viewComment.Buffer.Text = $"{listComments.ItemText}\n\n{jcr.Comments[listComments.ItemText]}";
+        }
+
 
         // Sub functions
         static void Load(string j){
-            if (JCR6.Recognize(j).ToUpper()!="NONE"){
+            if (JCR6.Recognize(j).ToUpper()=="NONE"){
                 QuickGTK.Error($"JCR6 ERROR!\n\nNone of the loaded file drivers recognized the file:\n{j}");
                 return;
             }
@@ -84,6 +93,14 @@ namespace GJCR
                 return;
             }
             jcr = tempjcr;
+            listComments.Clear();
+            foreach (string ck in jcr.Comments.Keys) listComments.AddItem(ck);
+            AutoEnable();
+        }
+
+        static void AutoEnable(){
+            foreach (Widget w in FileRequired) w.Sensitive = hasfile;
+            foreach (Widget w in EntryRequired) w.Sensitive = hasentry;
         }
 
 
@@ -104,7 +121,10 @@ namespace GJCR
             MKL.Lic    ("GJCR6 for .NET - GJCR6.cs","GNU General Public License 3");
             MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.27");
             if (System.IO.File.Exists(configfile))
+            {
+                Console.WriteLine($"Loading: {configfile}");
                 Config = GINI.ReadFromFile(configfile);
+            }
             else
                 Config = new TGINI();
             JCR6_zlib.Init();
@@ -136,6 +156,7 @@ namespace GJCR
             boxComments.SetSizeRequest(ww, 250);
             listComments = new ListBox("Comments");
             listComments.SetSizeRequest(300, 250);
+            listComments.Gadget.CursorChanged += OnComments;
             boxComments.Add(QuickGTK.Scroll(listComments.Gadget));
             viewComment = new TextView();
             viewComment.ModifyBase(StateType.Normal,new Gdk.Color( 0, 18, 25));
@@ -151,6 +172,7 @@ namespace GJCR
             boxButtons = new HBox();
             boxButtons.SetSizeRequest(ww, 25);
             bOpen = new Button("Open JCR");
+            bOpen.Clicked += OnOpen;
             bView = new Button("View"); EntryRequired.Add(bView);
             bExtract = new Button("Extract entry"); EntryRequired.Add(bExtract);
             bExtractAll = new Button("Extract all entries to: "); FileRequired.Add(bExtractAll);
@@ -167,6 +189,7 @@ namespace GJCR
             boxButtons.Add(cbRecent);
             boxEntries.Add(boxButtons);
             boxEntries.Add(sEntries);
+            AutoEnable();
         }
 
         public static void Run(){
