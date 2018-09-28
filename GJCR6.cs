@@ -67,13 +67,14 @@ namespace GJCR
         static ComboBox cbRecent;
         static Entry eExtractAll;
         static ScrolledWindow sEntries;
-        static NodeView nvEntries;
+        static TreeView nvEntries;
+        static ListStore lsEntries;
 
 
         // Callback functions
         static void OnOpen(object sender,EventArgs e){
             var file = QuickGTK.RequestFile("Please choose a JCR6 compatible file");
-            Load(file);
+            if (file!="") Load(file);
         }
 
         static void OnComments(object sender,EventArgs e){
@@ -96,6 +97,12 @@ namespace GJCR
             listComments.Clear();
             foreach (string ck in jcr.Comments.Keys) listComments.AddItem(ck);
             AutoEnable();
+            lsEntries.Clear();
+            foreach(TJCREntry e in jcr.Entries.Values){
+                lsEntries.AppendValues(e.Entry, $"{e.Size}", $"{e.CompressedSize}", e.Ratio, e.Storage,e.MainFile, e.Author, e.Notes);
+            }
+            nvEntries.Model = lsEntries;
+
         }
 
         static void AutoEnable(){
@@ -142,7 +149,19 @@ namespace GJCR
 
         static void InitEntryTreeView()
         {
-            string[] nodes = { "Entry", "Size", "Compressed Size", "Ratio", "Main File", "Author", "Notes" };
+            string[] nodes = { "Entry", "Size", "Compressed Size", "Ratio", "Storage", "Main File", "Author", "Notes" };
+            bool[] nright = { false, true, true, true, false, false, false };
+            lsEntries = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),typeof(string),typeof(string), typeof(string));
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                var tvc = new TreeViewColumn();
+                var NameCell = new CellRendererText();
+                tvc.Title = nodes[i];
+                tvc.PackStart(NameCell, true);
+                tvc.AddAttribute(NameCell, "text", i);
+                nvEntries.AppendColumn(tvc);
+            }
+
         }
 
         static void ComposeGUI()
@@ -183,7 +202,7 @@ namespace GJCR
             eExtractAll = new Entry(); FileRequired.Add(eExtractAll);
             bInfo = new Button("Entry Info"); EntryRequired.Add(bInfo);
             cbRecent = new ComboBox();
-            nvEntries = new NodeView(); FileRequired.Add(nvEntries);
+            nvEntries = new TreeView(); FileRequired.Add(nvEntries);
             sEntries = QuickGTK.Scroll(nvEntries);
             sEntries.SetSizeRequest(ww, (wh - 250) - 25);
             InitEntryTreeView();
