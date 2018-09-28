@@ -23,20 +23,29 @@
 // Version: 18.09.27
 // EndLic
 ﻿using System;
+using System.Collections.Generic;
 using Gtk;
 using TrickyUnits;
 using TrickyUnits.GTK;
+using UseJCR6;
 
 namespace GJCR
 {
-    class MainClass
+    class GJCR_Main
     {
         // Variables
 
         // Config
         const int ww = 1500;
         const int wh = 1000;
+        static readonly string configdir;
+        static string configfile { get { return $"{configdir}Config.GINI"; }}
         static TGINI Config;
+        static TJCRDIR jcr;
+        static readonly List<Widget> FileRequired = new List<Widget>();
+        static readonly List<Widget> EntryRequired = new List<Widget>();
+        static bool hasfile { get { return jcr != null; } }
+        static bool hasentry { get { return false; }} // TODO: Make this respond properly to having an entry
 
         // GUI: Main
         static MainWindow win;
@@ -48,21 +57,69 @@ namespace GJCR
         static TextView viewComment;
 
         // GUI: Entry view
-        static HBox boxEntries;
+        static VBox boxEntries;
+        static HBox boxButtons;
+        static Button bOpen;
         static Button bView;
         static Button bExtract;
         static Button bExtractAll;
         static Button bInfo;
+        static ComboBox cbRecent;
         static Entry eExtractAll;
+        static ScrolledWindow sEntries;
+        static NodeView nvEntries;
 
-        // Functions
+
+        // Callback functions
+
+        // Sub functions
+        static void Load(string j){
+            if (JCR6.Recognize(j).ToUpper()!="NONE"){
+                QuickGTK.Error($"JCR6 ERROR!\n\nNone of the loaded file drivers recognized the file:\n{j}");
+                return;
+            }
+            var tempjcr = JCR6.Dir(j);
+            if ( JCR6.JERROR!=""){
+                QuickGTK.Error($"JCR6 ERROR!\n\nLoading \"{j}\" failed:\n\n{JCR6.JERROR}");
+                return;
+            }
+            jcr = tempjcr;
+        }
+
+
+        // Functions for main stuff
+
+        static GJCR_Main(){
+            Dirry.Add("___APPLICATIONNAME___", "GJCR6");
+            configdir = Dirry.C("$AppSupport$/GJCR6CS/"); //Config.GINI");
+            Console.WriteLine("Config file: " + configfile);
+            if (!System.IO.Directory.Exists(configdir)) {
+                Console.WriteLine("Creating dir: " + configdir);
+                System.IO.Directory.CreateDirectory(configdir);
+            }
+        }
 
         public static void Init(string[] args) // Args are copied in order to allow direct JCR6 loading from the command line
         {
             MKL.Lic    ("GJCR6 for .NET - GJCR6.cs","GNU General Public License 3");
             MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.27");
+            if (System.IO.File.Exists(configfile))
+                Config = GINI.ReadFromFile(configfile);
+            else
+                Config = new TGINI();
+            JCR6_zlib.Init();
+            JCR6_lzma.Init();
+            new JCR6_WAD();
+            new JCR6_RealDir();
+            new JCR_QuakePack();
             Application.Init();
         }
+
+        static void Done(){
+            Console.WriteLine("Saving config: " + configfile);
+            Config.SaveSource(configfile);
+        }
+
 
         public static void ComposeGUI()
         {
@@ -75,6 +132,7 @@ namespace GJCR
             win.ModifyBg(StateType.Normal,new Gdk.Color(0, 0, 0));
             // Comments
             boxComments = new HBox();
+            FileRequired.Add(boxComments);
             boxComments.SetSizeRequest(ww, 250);
             listComments = new ListBox("Comments");
             listComments.SetSizeRequest(300, 250);
@@ -87,9 +145,28 @@ namespace GJCR
             boxComments.Add(QuickGTK.Scroll(viewComment));
             whole.Add(boxComments);
             // Entries
-            boxEntries = new HBox();
+            boxEntries = new VBox();
             boxEntries.SetSizeRequest(ww, wh - 250);
             whole.Add(boxEntries);
+            boxButtons = new HBox();
+            boxButtons.SetSizeRequest(ww, 25);
+            bOpen = new Button("Open JCR");
+            bView = new Button("View"); EntryRequired.Add(bView);
+            bExtract = new Button("Extract entry"); EntryRequired.Add(bExtract);
+            bExtractAll = new Button("Extract all entries to: "); FileRequired.Add(bExtractAll);
+            eExtractAll = new Entry(); FileRequired.Add(eExtractAll);
+            bInfo = new Button("Entry Info"); EntryRequired.Add(bInfo);
+            cbRecent = new ComboBox();
+            nvEntries = new NodeView(); FileRequired.Add(nvEntries);
+            sEntries = QuickGTK.Scroll(nvEntries);
+            sEntries.SetSizeRequest(ww, (wh - 250) - 25);
+            boxButtons.Add(bOpen);
+            boxButtons.Add(bView);
+            boxButtons.Add(bExtract);
+            boxButtons.Add(bExtractAll); boxButtons.Add(eExtractAll);
+            boxButtons.Add(cbRecent);
+            boxEntries.Add(boxButtons);
+            boxEntries.Add(sEntries);
         }
 
         public static void Run(){
@@ -101,6 +178,7 @@ namespace GJCR
             Init(args);
             ComposeGUI();
             Run();
+            Done();
         }
 
     }
