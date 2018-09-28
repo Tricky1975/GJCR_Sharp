@@ -140,8 +140,12 @@ namespace GJCR
             Config.SaveSource(configfile);
         }
 
+        static void InitEntryTreeView()
+        {
+            string[] nodes = { "Entry", "Size", "Compressed Size", "Ratio", "Main File", "Author", "Notes" };
+        }
 
-        public static void ComposeGUI()
+        static void ComposeGUI()
         {
             // Window
             win = new MainWindow();
