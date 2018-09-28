@@ -20,7 +20,7 @@
 // 		
 // 	Exceptions to the standard GNU license are available with Jeroen's written permission given prior 
 // 	to the project the exceptions are needed for.
-// Version: 18.09.27
+// Version: 18.09.28
 // EndLic
 ﻿using System;
 using System.Collections.Generic;
@@ -119,7 +119,7 @@ namespace GJCR
         public static void Init(string[] args) // Args are copied in order to allow direct JCR6 loading from the command line
         {
             MKL.Lic    ("GJCR6 for .NET - GJCR6.cs","GNU General Public License 3");
-            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.27");
+            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.28");
             if (System.IO.File.Exists(configfile))
             {
                 Console.WriteLine($"Loading: {configfile}");
