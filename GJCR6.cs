@@ -106,6 +106,8 @@ namespace GJCR
             var font = new Pango.FontDescription();
             font.Family = "Courier";
             tv.ModifyFont(font);
+            tv.ModifyBase(StateType.Normal, new Gdk.Color(18, 0, 25));
+            tv.ModifyText(StateType.Normal, new Gdk.Color(0, 180, 255));
             new GJCR_View(tv,$"Showing {filename}");
         }
 
