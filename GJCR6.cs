@@ -103,6 +103,9 @@ namespace GJCR
         static void ViewText(string filename){
             var tv = new TextView();
             tv.Buffer.Text=jcr.LoadString(filename);
+            var font = new Pango.FontDescription();
+            font.Family = "Courier";
+            tv.ModifyFont(font);
             new GJCR_View(tv,$"Showing {filename}");
         }
 
