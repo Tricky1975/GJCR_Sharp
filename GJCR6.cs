@@ -70,8 +70,21 @@ namespace GJCR
         static readonly List<Widget> FileRequired = new List<Widget>();
         static readonly List<Widget> EntryRequired = new List<Widget>();
         static string filename = "";
+        static string file_extension { get => System.IO.Path.GetExtension(filename); }
+        static string entrykey { get => filename.ToUpper();  }
+        static TJCREntry entry { get {
+                if (!jcr.Entries.ContainsKey(entrykey)) return null;
+                return jcr.Entries[entrykey];
+            }}
         static bool hasfile { get { return jcr != null; } }
         static bool hasentry { get { return hasfile && filename != ""; }} // TODO: Make this respond properly to having an entry
+        static bool knownstorage {
+            get {
+                var b = JCR6.CompDrivers.ContainsKey(entry.Storage);
+                if (!b) QuickGTK.Error($"ERROR!\n\nThere is no driver loaded for storage method {entry.Storage}");
+                return b;
+            }
+        }
 
         // GUI: Main
         static MainWindow win;
@@ -181,6 +194,7 @@ namespace GJCR
         static void OnView(object sender, EventArgs e)
         {
             string ex;
+            if (!knownstorage) return;
             ex = System.IO.Path.GetExtension(filename).ToUpper();
             if (CV.ContainsKey(ex)) CV[ex](filename); else {
                 //QuickGTK.Error("There is no support YET to view that kind of file");
@@ -198,6 +212,19 @@ namespace GJCR
                 filename = (model.GetValue(iter, 0) as string);
             }
             AutoEnable();
+        }
+
+        static void OnExtract(object sender,EventArgs e){
+            if (!knownstorage) return;
+            var fn = QuickGTK.RequestFileSave($"Extract {filename} to:");
+            var fe = System.IO.Path.GetExtension(fn);
+            if (fe!=file_extension) {
+                if (!QuickGTK.Confirm($"WARNING!\nThe file extension of the entry inside this JCR resource ({filename}) differs from the one in the file name you are extracting the data to({fn}).\n\nAlthough the data will just be handled normally, this can lead some programs to get confused.\n\nDo you wish to continue?", MessageType.Warning)) return;
+            }
+            var bo = QOpen.WriteFile(fn);
+            //var bytes = jcr.JCR_B(filename);
+            bo.WriteBytes(jcr.JCR_B(filename));
+            bo.Close();
         }
 
 
@@ -323,6 +350,7 @@ namespace GJCR
             bView = new Button("View"); EntryRequired.Add(bView);
             bView.Clicked += OnView;
             bExtract = new Button("Extract entry"); EntryRequired.Add(bExtract);
+            bExtract.Clicked += OnExtract;
             bExtractAll = new Button("Extract all entries to: "); FileRequired.Add(bExtractAll);
             eExtractAll = new Entry(); FileRequired.Add(eExtractAll);
             bInfo = new Button("Entry Info"); EntryRequired.Add(bInfo);
