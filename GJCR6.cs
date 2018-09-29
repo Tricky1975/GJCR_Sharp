@@ -23,6 +23,7 @@
 // Version: 18.09.29
 // EndLic
 ﻿using System;
+using System.Media;
 using System.Collections.Generic;
 using Gtk;
 using TrickyUnits;
@@ -109,6 +110,10 @@ namespace GJCR
         static TreeView nvEntries;
         static ListStore lsEntries;
 
+        // Audio "view"
+        //static SoundPlayer playsound;
+        static List<string> TempAudio = new List<string>();
+
 
         // View functions
         static Dictionary<string, CreateView> CV = new Dictionary<string, CreateView>();
@@ -178,6 +183,34 @@ namespace GJCR
             tv.Editable = false;
             new GJCR_View(tv, $"Showing HEX {filename}");
 
+        }
+
+        static void ViewAudio(string filename){
+            /*
+            var s = jcr.ReadFile(filename);
+            if (playsound!=null) playsound.Stop(); 
+            if (s == null) { QuickGTK.Error($"Reading {filename} failed\n\n{JCR6.JERROR}"); }
+            playsound = new SoundPlayer(s.GetStream());
+            s.Close();
+            playsound.Play();
+            */
+            var i = -1;
+            var s = "";
+            var e = System.IO.Path.GetExtension(filename);
+            do
+            {
+                i++;
+                s = i.ToString("X8") + e;
+            } while (System.IO.File.Exists(s));
+            var bi = jcr.ReadFile(filename);
+            var b = bi.ReadBytes((int)bi.Size); bi.Close();
+            var bo = QOpen.WriteFile(s);
+            bo.WriteBytes(b);
+            bo.Close();
+            // Only works in unix based systems
+            // A windows solution will be implemented later.
+            System.Diagnostics.Process.Start("mplayer", s);
+            TempAudio.Add(s);
         }
 
 
@@ -340,8 +373,10 @@ namespace GJCR
             new JCR_QuakePack();
             string[] txt = { "MD", "TXT", "LUA", "BLP", "SH", "BAT", "PHP","GINI" };
             string[] img = { "PNG", "GIF", "BMP", "JPG", "ICNS", "ICO", "JPEG", "PCX", "TGA", "TIFF" };
+            string[] aud = { "WAV", "FLAC","OGG","MP3" };
             foreach (string k in txt) CV[$".{k}"] = ViewText;
             foreach (string k in img) CV[$".{k}"] = ViewImage;
+            foreach (string k in aud) CV[$".{k}"] = ViewAudio;
             // foreach (Gdk.PixbufFormat f in Gdk.Pixbuf.Formats) Console.WriteLine($"Image format: {f.Name}"); // debug
             Application.Init();
         }
@@ -349,6 +384,7 @@ namespace GJCR
         static void Done(){
             Console.WriteLine("Saving config: " + configfile);
             Config.SaveSource(configfile);
+            foreach (string s in TempAudio) { System.IO.File.Delete(s); Console.WriteLine("Deleted: " + s); }
         }
 
         static void InitEntryTreeView()
