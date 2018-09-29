@@ -20,7 +20,7 @@
 // 		
 // 	Exceptions to the standard GNU license are available with Jeroen's written permission given prior 
 // 	to the project the exceptions are needed for.
-// Version: 18.09.28
+// Version: 18.09.29
 // EndLic
 ﻿using System;
 using System.Collections.Generic;
@@ -31,6 +31,31 @@ using UseJCR6;
 
 namespace GJCR
 {
+
+    class GJCR_View{
+        Window vWin;
+
+        void OnClose(object sender, EventArgs e) { vWin.Destroy(); }
+
+        public GJCR_View(Widget view,string Caption,bool vp=false){
+            vWin = new Window(Caption);
+            vWin.SetSizeRequest(900, 800);
+            var box = new VBox();
+            var scroll = new ScrolledWindow();
+            if (vp) scroll.AddWithViewport(view);  else            scroll.Add(view);
+            scroll.SetSizeRequest(900, 775);
+            box.Add(scroll);
+            var close = new Button("Close");
+            box.Add(close);
+            close.SetSizeRequest(900, 25);
+            close.Clicked += OnClose;
+            vWin.Add(box);
+            vWin.ShowAll();
+        }
+    }
+
+    delegate void CreateView (string filename);
+
     class GJCR_Main
     {
         // Variables
@@ -44,8 +69,9 @@ namespace GJCR
         static TJCRDIR jcr;
         static readonly List<Widget> FileRequired = new List<Widget>();
         static readonly List<Widget> EntryRequired = new List<Widget>();
+        static string filename = "";
         static bool hasfile { get { return jcr != null; } }
-        static bool hasentry { get { return false; }} // TODO: Make this respond properly to having an entry
+        static bool hasentry { get { return hasfile && filename != ""; }} // TODO: Make this respond properly to having an entry
 
         // GUI: Main
         static MainWindow win;
@@ -71,6 +97,31 @@ namespace GJCR
         static ListStore lsEntries;
 
 
+        // View functions
+        static Dictionary<string, CreateView> CV = new Dictionary<string, CreateView>();
+
+        static void ViewText(string filename){
+            var tv = new TextView();
+            tv.Buffer.Text=jcr.LoadString(filename);
+            new GJCR_View(tv,$"Showing {filename}");
+        }
+
+        static void ViewImage(string filename){
+            var s = jcr.ReadFile(filename);
+            var b = s.ReadBytes((int)s.Size); s.Close();
+            var t = configdir + "temp" + System.IO.Path.GetExtension(filename);
+            s = QOpen.WriteFile(t);
+            s.WriteBytes(b);
+            s.Close();
+            var img = new Image(t);
+            img.Visible = true;
+            //var bx = new VBox(); bx.Add(img);
+            //var img = new Image(s.GetStream());
+            new GJCR_View(img, $"Showing image: {filename}",true);
+            System.IO.File.Delete(t);
+        }
+
+
         // Callback functions
         static void OnOpen(object sender,EventArgs e){
             var file = QuickGTK.RequestFile("Please choose a JCR6 compatible file");
@@ -79,6 +130,27 @@ namespace GJCR
 
         static void OnComments(object sender,EventArgs e){
             viewComment.Buffer.Text = $"{listComments.ItemText}\n\n{jcr.Comments[listComments.ItemText]}";
+        }
+
+        static void OnView(object sender, EventArgs e)
+        {
+            string ex;
+            ex = System.IO.Path.GetExtension(filename).ToUpper();
+            if (CV.ContainsKey(ex)) CV[ex](filename); else {
+                QuickGTK.Error("There is no support YET to view that kind of file");
+            }
+
+        }
+
+        static void OnEntrySelect(object sender,EventArgs e){
+            TreeSelection selection = nvEntries.Selection;
+            TreeModel model;
+            TreeIter iter;
+            if (selection.GetSelected(out model, out iter))
+            {
+                filename = (model.GetValue(iter, 0) as string);
+            }
+            AutoEnable();
         }
 
 
@@ -126,7 +198,7 @@ namespace GJCR
         public static void Init(string[] args) // Args are copied in order to allow direct JCR6 loading from the command line
         {
             MKL.Lic    ("GJCR6 for .NET - GJCR6.cs","GNU General Public License 3");
-            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.28");
+            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.29");
             if (System.IO.File.Exists(configfile))
             {
                 Console.WriteLine($"Loading: {configfile}");
@@ -139,6 +211,10 @@ namespace GJCR
             new JCR6_WAD();
             new JCR6_RealDir();
             new JCR_QuakePack();
+            string[] txt = { "MD", "TXT", "LUA", "BLP", "SH", "BAT", "PHP" };
+            string[] img = { "PNG", "GIF", "BMP", "JPG" };
+            foreach (string k in txt) CV[$".{k}"] = ViewText;
+            foreach (string k in img) CV[$".{k}"] = ViewImage;
             Application.Init();
         }
 
@@ -197,12 +273,14 @@ namespace GJCR
             bOpen = new Button("Open JCR");
             bOpen.Clicked += OnOpen;
             bView = new Button("View"); EntryRequired.Add(bView);
+            bView.Clicked += OnView;
             bExtract = new Button("Extract entry"); EntryRequired.Add(bExtract);
             bExtractAll = new Button("Extract all entries to: "); FileRequired.Add(bExtractAll);
             eExtractAll = new Entry(); FileRequired.Add(eExtractAll);
             bInfo = new Button("Entry Info"); EntryRequired.Add(bInfo);
             cbRecent = new ComboBox();
             nvEntries = new TreeView(); FileRequired.Add(nvEntries);
+            nvEntries.CursorChanged += OnEntrySelect;
             sEntries = QuickGTK.Scroll(nvEntries);
             sEntries.SetSizeRequest(ww, (wh - 250) - 25);
             InitEntryTreeView();
