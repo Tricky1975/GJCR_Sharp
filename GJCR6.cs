@@ -227,6 +227,49 @@ namespace GJCR
             bo.Close();
         }
 
+        static void OnRecent(object sender,EventArgs e){
+            Load(cbRecent.ActiveText);
+        }
+
+        static void OnExtractAll(object sender, EventArgs a){
+            var xto = eExtractAll.Text.Replace("\\","/");
+            if (xto == "/") { QuickGTK.Error("I need a folder to extract everything to!"); return; }
+            if (qstr.Right(xto, 1) != "/") xto += "/";
+            if (!QuickGTK.Confirm($"Extract all entries to {xto}?")) return;
+            win.Hide();
+            var i = 0;
+            var c = jcr.Entries.Count;
+            var r = System.IO.Directory.CreateDirectory(xto);
+            if (!r.Exists) { QuickGTK.Error("Creating dir failed");  return; }
+            var twin = new Window("Extracting");
+            twin.SetSizeRequest(400, 30);
+            var tlab = new Label("...");
+            twin.Add(tlab);
+            twin.ShowAll();
+            var success = 0;
+            var failed = 0;
+            foreach(TJCREntry e in jcr.Entries.Values ){
+                i++;
+                tlab.Text = $"{i}/{c}: Extracting {e.Entry}";
+                var outfile = $"{xto}{e.Entry}";
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(outfile));
+
+                var b = jcr.JCR_B(e.Entry);
+                if (b==null){
+                    QuickGTK.Error($"Extracting {e.Entry} failed!\n\n{JCR6.JERROR}");
+                    failed++;
+                } else {
+                    var bt = QOpen.WriteFile(outfile);
+                    bt.WriteBytes(b);
+                    bt.Close();
+                    success++;
+                }
+            }
+            twin.Destroy();
+            QuickGTK.Info($"Extraction complete\nSuccess: {success}\nFailed {failed}");
+            win.ShowAll();
+        }
+
 
         // Sub functions
         static void Load(string j){
@@ -248,6 +291,16 @@ namespace GJCR
                 lsEntries.AppendValues(e.Entry, $"{e.Size}", $"{e.CompressedSize}", e.Ratio, e.Storage,e.MainFile, e.Author, e.Notes);
             }
             nvEntries.Model = lsEntries;
+
+            var l = Config.List("Recent_JCR");
+            l.Remove(j);
+            l.Insert(0, j);
+            /*
+            var rls = new ListStore(typeof(string));
+            foreach (string rs in l) rls.AppendValues(l);
+            cbRecent.Clear();
+            cbRecent.Model = rls;
+            */
 
         }
 
@@ -354,7 +407,15 @@ namespace GJCR
             bExtractAll = new Button("Extract all entries to: "); FileRequired.Add(bExtractAll);
             eExtractAll = new Entry(); FileRequired.Add(eExtractAll);
             bInfo = new Button("Entry Info"); EntryRequired.Add(bInfo);
-            cbRecent = new ComboBox();
+            bExtractAll.Clicked += OnExtractAll;
+            cbRecent = new ComboBox(); //Config.List("Recent_JCR").ToArray());
+            CellRendererText text = new CellRendererText();
+            cbRecent.PackStart(text, false);
+            cbRecent.AddAttribute(text, "text", 0);
+            cbRecent.Changed += OnRecent;
+            var ls = new ListStore(typeof(string));
+            foreach (string rf in Config.List("Recent_JCR")) ls.AppendValues(rf);
+            cbRecent.Model = ls;
             nvEntries = new TreeView(); FileRequired.Add(nvEntries);
             nvEntries.CursorChanged += OnEntrySelect;
             nvEntries.RulesHint = true;
