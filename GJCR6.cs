@@ -108,6 +108,7 @@ namespace GJCR
             tv.ModifyFont(font);
             tv.ModifyBase(StateType.Normal, new Gdk.Color(18, 0, 25));
             tv.ModifyText(StateType.Normal, new Gdk.Color(0, 180, 255));
+            tv.Editable = false;
             new GJCR_View(tv,$"Showing {filename}");
         }
 
