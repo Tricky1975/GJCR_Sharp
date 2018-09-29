@@ -127,6 +127,46 @@ namespace GJCR
             System.IO.File.Delete(t);
         }
 
+        static void ViewHEX(string filename){
+            var s = jcr.ReadFile(filename);
+            var b = s.ReadBytes((int)s.Size);
+            var py = -1;
+            var px = 16;
+            var dump = "........   00 01 02 03   04 05 06 07   08 09 0A 0B   0C 0D 0E 0F\n";
+            var tdmp = "";
+            for (int i = 0; i < b.Length;i++){
+                px++;
+                if (px > 0xf) { 
+                    px = 0; 
+                    py++;
+                    dump += $" {tdmp}\n";
+                    tdmp = "";
+                    var pos = py * 0x10;
+                    dump += $"{pos.ToString("X8")} ";
+                }
+                var cb = b[i];
+                if (px % 4 == 0) dump += "  ";
+                dump += $"{cb.ToString("X2")} ";
+                if (cb > 31 && cb < 127) tdmp += qstr.Chr(cb); else tdmp += ".";
+            }
+            while (px<0xf){
+                px++;
+                if (px % 4 == 0) dump += "  ";
+                dump += ".. ";
+            }
+            dump += $" {tdmp}";
+            var tv = new TextView();
+            tv.Buffer.Text = dump;
+            var font = new Pango.FontDescription();
+            font.Family = "Courier";
+            tv.ModifyFont(font);
+            tv.ModifyBase(StateType.Normal, new Gdk.Color(25, 18, 0));
+            tv.ModifyText(StateType.Normal, new Gdk.Color(255, 180, 0));
+            tv.Editable = false;
+            new GJCR_View(tv, $"Showing HEX {filename}");
+
+        }
+
 
         // Callback functions
         static void OnOpen(object sender,EventArgs e){
@@ -143,7 +183,8 @@ namespace GJCR
             string ex;
             ex = System.IO.Path.GetExtension(filename).ToUpper();
             if (CV.ContainsKey(ex)) CV[ex](filename); else {
-                QuickGTK.Error("There is no support YET to view that kind of file");
+                //QuickGTK.Error("There is no support YET to view that kind of file");
+                ViewHEX(filename);
             }
 
         }
@@ -217,10 +258,11 @@ namespace GJCR
             new JCR6_WAD();
             new JCR6_RealDir();
             new JCR_QuakePack();
-            string[] txt = { "MD", "TXT", "LUA", "BLP", "SH", "BAT", "PHP" };
-            string[] img = { "PNG", "GIF", "BMP", "JPG" };
+            string[] txt = { "MD", "TXT", "LUA", "BLP", "SH", "BAT", "PHP","GINI" };
+            string[] img = { "PNG", "GIF", "BMP", "JPG", "ICNS", "ICO", "JPEG", "PCX", "TGA", "TIFF" };
             foreach (string k in txt) CV[$".{k}"] = ViewText;
             foreach (string k in img) CV[$".{k}"] = ViewImage;
+            // foreach (Gdk.PixbufFormat f in Gdk.Pixbuf.Formats) Console.WriteLine($"Image format: {f.Name}"); // debug
             Application.Init();
         }
 
@@ -287,6 +329,7 @@ namespace GJCR
             cbRecent = new ComboBox();
             nvEntries = new TreeView(); FileRequired.Add(nvEntries);
             nvEntries.CursorChanged += OnEntrySelect;
+            nvEntries.RulesHint = true;
             sEntries = QuickGTK.Scroll(nvEntries);
             sEntries.SetSizeRequest(ww, (wh - 250) - 25);
             InitEntryTreeView();
