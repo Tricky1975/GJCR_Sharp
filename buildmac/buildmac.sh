@@ -31,7 +31,7 @@ echo "Copying icon"
 cp -v "../Icons/GJCR.icns" "$MACBUNDLE/Contents/Resources/GJCR.icns"
 
 echo "Copying binaries"
-cp -v "../bin/Release/"* "$MACBUNDLE/Contents/MacOS"
+cp -Rv "../bin/Release/"* "$MACBUNDLE/Contents/MacOS"
 
 echo "Copying startup file"
 cp -v "Needed/RunShell.sh" "$MACBUNDLE/Contents/MacOS/$PUREMACAPP"
