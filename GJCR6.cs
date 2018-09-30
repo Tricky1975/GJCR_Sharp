@@ -200,7 +200,7 @@ namespace GJCR
             do
             {
                 i++;
-                s = i.ToString("X8") + e;
+                s = configdir+i.ToString("X8") + e;
             } while (System.IO.File.Exists(s));
             var bi = jcr.ReadFile(filename);
             var b = bi.ReadBytes((int)bi.Size); bi.Close();
