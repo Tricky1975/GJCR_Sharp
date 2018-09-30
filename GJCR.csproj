@@ -194,7 +194,6 @@
     <Compile Include="..\JCR6\Drivers\FileTypes\WAD.cs">
       <Link>Dependencies\JCR6\Drivers\FileTypes\WAD.cs</Link>
     </Compile>
-    <Compile Include="Icons\JCR.ico" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Dependencies\" />
@@ -202,6 +201,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Icons\GJCR.icns" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Icons\JCR.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
