@@ -306,6 +306,7 @@ namespace GJCR
 
         // Sub functions
         static void Load(string j){
+            Console.WriteLine($"Loading JCR: {j}");
             string rPrefix = System.IO.Path.GetDirectoryName(j).Replace(@"\","/");
             if (!qstr.Suffixed(rPrefix, "/") && (rPrefix.Length != 2 && qstr.Mid(rPrefix, 2, 1) != ":")) rPrefix += "/";
             if (JCR6.Recognize(j).ToUpper()=="NONE"){
@@ -373,6 +374,7 @@ namespace GJCR
                 Config = new TGINI();
             JCR6_zlib.Init();
             JCR6_lzma.Init();
+            JCR_JCR5.Init();
             new JCR6_WAD();
             new JCR6_RealDir();
             new JCR_QuakePack();

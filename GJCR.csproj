@@ -194,6 +194,9 @@
     <Compile Include="..\JCR6\Drivers\FileTypes\WAD.cs">
       <Link>Dependencies\JCR6\Drivers\FileTypes\WAD.cs</Link>
     </Compile>
+    <Compile Include="..\JCR6\Drivers\FileTypes\JCR5.cs">
+      <Link>Dependencies\JCR6\Drivers\FileTypes\JCR5.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Dependencies\" />
