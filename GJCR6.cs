@@ -20,7 +20,7 @@
 // 		
 // 	Exceptions to the standard GNU license are available with Jeroen's written permission given prior 
 // 	to the project the exceptions are needed for.
-// Version: 18.09.29
+// Version: 18.09.30
 // EndLic
 ﻿using System;
 using System.Media;
@@ -306,6 +306,8 @@ namespace GJCR
 
         // Sub functions
         static void Load(string j){
+            string rPrefix = System.IO.Path.GetDirectoryName(j).Replace(@"\","/");
+            if (!qstr.Suffixed(rPrefix, "/") && (rPrefix.Length != 2 && qstr.Mid(rPrefix, 2, 1) != ":")) rPrefix += "/";
             if (JCR6.Recognize(j).ToUpper()=="NONE"){
                 QuickGTK.Error($"JCR6 ERROR!\n\nNone of the loaded file drivers recognized the file:\n{j}");
                 return;
@@ -321,7 +323,10 @@ namespace GJCR
             AutoEnable();
             lsEntries.Clear();
             foreach(TJCREntry e in jcr.Entries.Values){
-                lsEntries.AppendValues(e.Entry, $"{e.Size}", $"{e.CompressedSize}", e.Ratio, e.Storage,e.MainFile, e.Author, e.Notes);
+                var tMainFile = e.MainFile.Replace(@"\", "/");
+                //Console.WriteLine(rPrefix + "\n" + tMainFile);
+                if (qstr.Prefixed(tMainFile, rPrefix)) tMainFile = qstr.Right(tMainFile, tMainFile.Length - rPrefix.Length);
+                lsEntries.AppendValues(e.Entry, $"{e.Size}", $"{e.CompressedSize}", e.Ratio, e.Storage,tMainFile, e.Author, e.Notes);
             }
             nvEntries.Model = lsEntries;
 
@@ -358,7 +363,7 @@ namespace GJCR
         public static void Init(string[] args) // Args are copied in order to allow direct JCR6 loading from the command line
         {
             MKL.Lic    ("GJCR6 for .NET - GJCR6.cs","GNU General Public License 3");
-            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.29");
+            MKL.Version("GJCR6 for .NET - GJCR6.cs","18.09.30");
             if (System.IO.File.Exists(configfile))
             {
                 Console.WriteLine($"Loading: {configfile}");
