@@ -57,6 +57,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\JCR6\Drivers\Compression\jxsrcca\jcr6_jxsrcca.cs">
+      <Link>Dependencies\JCR6\Drivers\Compression\jxsrcca\jcr6_jxsrcca.cs</Link>
+    </Compile>
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="gtk-gui\MainWindow.cs" />

@@ -134,7 +134,7 @@ namespace GJCR
             var s = jcr.ReadFile(filename);
             var b = s.ReadBytes((int)s.Size); s.Close();
             var t = configdir + "temp" + System.IO.Path.GetExtension(filename);
-            s = QOpen.WriteFile(t);
+            s = QuickStream.WriteFile(t);
             s.WriteBytes(b);
             s.Close();
             var img = new Image(t);
@@ -204,7 +204,7 @@ namespace GJCR
             } while (System.IO.File.Exists(s));
             var bi = jcr.ReadFile(filename);
             var b = bi.ReadBytes((int)bi.Size); bi.Close();
-            var bo = QOpen.WriteFile(s);
+            var bo = QuickStream.WriteFile(s);
             bo.WriteBytes(b);
             bo.Close();
             // Only works in unix based systems
@@ -254,7 +254,7 @@ namespace GJCR
             if (fe!=file_extension) {
                 if (!QuickGTK.Confirm($"WARNING!\nThe file extension of the entry inside this JCR resource ({filename}) differs from the one in the file name you are extracting the data to({fn}).\n\nAlthough the data will just be handled normally, this can lead some programs to get confused.\n\nDo you wish to continue?", MessageType.Warning)) return;
             }
-            var bo = QOpen.WriteFile(fn);
+            var bo = QuickStream.WriteFile(fn);
             //var bytes = jcr.JCR_B(filename);
             bo.WriteBytes(jcr.JCR_B(filename));
             bo.Close();
@@ -292,7 +292,7 @@ namespace GJCR
                     QuickGTK.Error($"Extracting {e.Entry} failed!\n\n{JCR6.JERROR}");
                     failed++;
                 } else {
-                    var bt = QOpen.WriteFile(outfile);
+                    var bt = QuickStream.WriteFile(outfile);
                     bt.WriteBytes(b);
                     bt.Close();
                     success++;
@@ -375,6 +375,7 @@ namespace GJCR
             JCR6_zlib.Init();
             JCR6_lzma.Init();
             JCR_JCR5.Init();
+            JCR6_jxsrcca.Init();
             new JCR6_WAD();
             new JCR6_RealDir();
             new JCR_QuakePack();
