@@ -23,7 +23,7 @@
 // Version: 18.09.30
 // EndLic
 ﻿using System;
-using System.Media;
+using System.Text;
 using System.Collections.Generic;
 using Gtk;
 using TrickyUnits;
@@ -150,31 +150,31 @@ namespace GJCR
             var b = s.ReadBytes((int)s.Size);
             var py = -1;
             var px = 16;
-            var dump = "........   00 01 02 03   04 05 06 07   08 09 0A 0B   0C 0D 0E 0F\n";
-            var tdmp = "";
+            var dump = new StringBuilder("........   00 01 02 03   04 05 06 07   08 09 0A 0B   0C 0D 0E 0F\n");
+            var tdmp = new StringBuilder(1);
             for (int i = 0; i < b.Length;i++){
                 px++;
                 if (px > 0xf) { 
                     px = 0; 
                     py++;
-                    dump += $" {tdmp}\n";
-                    tdmp = "";
+                    dump.Append($" {tdmp}\n");
+                    tdmp.Clear(); // "";
                     var pos = py * 0x10;
-                    dump += $"{pos.ToString("X8")} ";
+                    dump.Append($"{pos.ToString("X8")} ");
                 }
                 var cb = b[i];
-                if (px % 4 == 0) dump += "  ";
-                dump += $"{cb.ToString("X2")} ";
-                if (cb > 31 && cb < 127) tdmp += qstr.Chr(cb); else tdmp += ".";
+                if (px % 4 == 0) dump .Append( "  ");
+                dump .Append( $"{cb.ToString("X2")} ");
+                if (cb > 31 && cb < 127) tdmp.Append(qstr.Chr(cb)); else tdmp.Append(".");
             }
             while (px<0xf){
                 px++;
-                if (px % 4 == 0) dump += "  ";
-                dump += ".. ";
+                if (px % 4 == 0) dump .Append( "  ");
+                dump .Append( ".. ");
             }
-            dump += $" {tdmp}";
+            dump .Append( $" {tdmp}");
             var tv = new TextView();
-            tv.Buffer.Text = dump;
+            tv.Buffer.Text = dump.ToString();
             var font = new Pango.FontDescription();
             font.Family = "Courier";
             tv.ModifyFont(font);
